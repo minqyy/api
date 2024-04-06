@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/minqyy/api/internal/app/router"
 	"github.com/minqyy/api/internal/config"
 	"github.com/minqyy/api/internal/lib/log/prettyslog"
 	"github.com/minqyy/api/internal/lib/log/sl"
@@ -31,9 +32,11 @@ func (a *App) Run() {
 
 	a.log.Info("Configuring server...", slog.String("env", a.config.Env))
 
+	r := router.New(a.config, a.log)
+
 	server := &http.Server{
 		Addr:         a.config.Server.Address,
-		Handler:      nil,
+		Handler:      r.InitRoutes(),
 		ReadTimeout:  a.config.Server.Timeout,
 		WriteTimeout: a.config.Server.Timeout,
 		IdleTimeout:  a.config.Server.IdleTimeout,

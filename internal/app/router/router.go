@@ -8,6 +8,8 @@ import (
 	"github.com/minqyy/api/internal/config"
 	"github.com/minqyy/api/pkg/requestid"
 	"github.com/minqyy/api/pkg/str"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"log/slog"
 )
 
@@ -36,7 +38,7 @@ func (r *Router) InitRoutes() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		//api.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		api.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 		auth := api.Group("/auth")
 		{

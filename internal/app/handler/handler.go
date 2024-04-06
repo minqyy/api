@@ -20,17 +20,10 @@ func New(cfg *config.Config, log *slog.Logger) *Handler {
 	}
 }
 
-// Register      Creates a user in database.
+// Register      Creates a user in database
 // @Summary      User registration
 // @Description  Creates a user in database
 // @Tags         auth
-// @Accept       json
-// @Produce      json
-// @Param        input body         request.UserCreate true "User data"
-// @Success      201  {object}      response.User
-// @Failure      400  {object}      response.Error
-// @Failure      409  {object}      response.Error
-// @Failure      500  {object}      response.Error
 // @Router       /auth/signup       [post]
 func (h *Handler) Register(ctx *gin.Context) {
 	time.Sleep(10 * time.Second)

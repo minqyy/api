@@ -1,0 +1,21 @@
+basePath: /api
+host: localhost:6969
+info:
+  contact: {}
+  description: API Server for Minqyy app
+  title: Minqyy API server
+  version: "0.1"
+paths:
+  /auth/signup:
+    post:
+      description: Creates a user in database
+      responses: {}
+      summary: User registration
+      tags:
+      - auth
+securityDefinitions:
+  AccessToken:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,30 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API Server for Minqyy app",
+        "title": "Minqyy API server",
+        "contact": {},
+        "version": "0.1"
+    },
+    "host": "localhost:6969",
+    "basePath": "/api",
+    "paths": {
+        "/auth/signup": {
+            "post": {
+                "description": "Creates a user in database",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "User registration",
+                "responses": {}
+            }
+        }
+    },
+    "securityDefinitions": {
+        "AccessToken": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

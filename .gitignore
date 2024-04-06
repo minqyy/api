@@ -6,3 +6,9 @@
 # Ignore config files
 .env
 config/*.yaml
+
+# Ignore database files
+.database/
+
+# Ignore binary files
+.bin/

@@ -1,0 +1,14 @@
+env: dev
+
+server:
+  address: "0.0.0.0:6969"
+  timeout: 4s
+  idle_timeout: 60s
+
+postgres:
+  host: ""
+  port: ""
+  user: ""
+  name: ""
+  password: ""
+  sslmode: ""

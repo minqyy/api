@@ -1,5 +1,6 @@
 package str
 
+// CompleteStringToLength add symbols to input string, to make it a given length
 func CompleteStringToLength(s string, length int, char rune) string {
 	if length < len(s) {
 		return s[:length]

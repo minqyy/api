@@ -27,6 +27,7 @@ func New(cfg *config.Config) *App {
 	}
 }
 
+// Run runs entire application and services
 func (a *App) Run() {
 	gin.SetMode(gin.ReleaseMode)
 

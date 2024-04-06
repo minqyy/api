@@ -20,21 +20,6 @@ type Config struct {
 	Server Server `yaml:"server" env-required:"true"`
 }
 
-//type PostgresDB struct {
-//	Host     string `yaml:"host"`
-//	Port     string `yaml:"port"`
-//	User     string `yaml:"user"`
-//	Name     string `yaml:"name"`
-//	Password string `yaml:"password"`
-//	ModeSSL  string `yaml:"sslmode"`
-//}
-
-//type Redis struct {
-//	Host     string `yaml:"host"`
-//	Username string `yaml:"username"`
-//	Password string `yaml:"password"`
-//}
-
 type Server struct {
 	Address     string        `yaml:"address" env-required:"true"`
 	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`

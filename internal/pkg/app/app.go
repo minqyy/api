@@ -8,6 +8,9 @@ import (
 	"github.com/minqyy/api/internal/config"
 	"github.com/minqyy/api/internal/lib/log/prettyslog"
 	"github.com/minqyy/api/internal/lib/log/sl"
+	"github.com/minqyy/api/internal/service"
+	"github.com/minqyy/api/internal/service/repository"
+	"github.com/minqyy/api/internal/service/repository/postgres"
 	"log/slog"
 	"net/http"
 	"os"
@@ -33,7 +36,15 @@ func (a *App) Run() {
 
 	a.log.Info("Configuring server...", slog.String("env", a.config.Env))
 
-	r := router.New(a.config, a.log)
+	postgresDB, err := postgres.New(a.config.Postgres)
+	if err != nil {
+		a.log.Error("Could not connect to postgres database")
+		os.Exit(1)
+	}
+
+	repo := repository.New(postgresDB, a.config)
+	srv := service.New(repo)
+	r := router.New(a.config, a.log, srv)
 
 	server := &http.Server{
 		Addr:         a.config.Server.Address,
@@ -59,14 +70,21 @@ func (a *App) Run() {
 
 	a.log.Info("Server is shutting down...")
 
-	err := server.Shutdown(context.Background())
+	err = server.Shutdown(context.Background())
 	if err != nil {
 		a.log.Error("Error occurred on server shutting down", sl.Err(err))
 	}
 
 	a.log.Info("Server stopped")
 
-	// close all db connections
+	err = postgresDB.Close()
+	if err != nil {
+		a.log.Error("Could not close postgres connection")
+	}
+
+	a.log.Info("Postgres connection closed")
+
+	// TODO: Close all db connections
 }
 
 func initLogger(env string) *slog.Logger {

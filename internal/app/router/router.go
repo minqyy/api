@@ -6,6 +6,7 @@ import (
 	"github.com/minqyy/api/internal/app/handler"
 	"github.com/minqyy/api/internal/app/middleware"
 	"github.com/minqyy/api/internal/config"
+	"github.com/minqyy/api/internal/service"
 	"github.com/minqyy/api/pkg/requestid"
 	"github.com/minqyy/api/pkg/str"
 	swaggerFiles "github.com/swaggo/files"
@@ -18,15 +19,17 @@ type Router struct {
 	log     *slog.Logger
 	handler *handler.Handler
 	mw      *middleware.Middleware
+	service *service.Service
 }
 
 // New creates a new instance of router.Router
-func New(cfg *config.Config, log *slog.Logger) *Router {
+func New(cfg *config.Config, log *slog.Logger, s *service.Service) *Router {
 	return &Router{
 		config:  cfg,
 		log:     log,
 		handler: handler.New(cfg, log),
 		mw:      middleware.New(cfg, log),
+		service: s,
 	}
 }
 

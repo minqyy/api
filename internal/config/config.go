@@ -18,6 +18,7 @@ const (
 type Config struct {
 	Env      string   `yaml:"env" env-required:"true"`
 	Server   Server   `yaml:"server" env-required:"true"`
+	Hasher   Hasher   `yaml:"hasher"`
 	Postgres Postgres `yaml:"postgres"`
 	Redis    Redis    `yaml:"redis"`
 }
@@ -26,6 +27,10 @@ type Server struct {
 	Address     string        `yaml:"address" env-required:"true"`
 	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+}
+
+type Hasher struct {
+	Salt string `yaml:"salt"`
 }
 
 type Postgres struct {

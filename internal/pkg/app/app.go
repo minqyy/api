@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 	"github.com/minqyy/api/internal/app/router"
 	"github.com/minqyy/api/internal/config"
 	"github.com/minqyy/api/internal/lib/log/prettyslog"
 	"github.com/minqyy/api/internal/lib/log/sl"
 	"github.com/minqyy/api/internal/service"
+	"github.com/minqyy/api/internal/service/hasher"
 	"github.com/minqyy/api/internal/service/repository"
 	"github.com/minqyy/api/internal/service/repository/postgres"
 	"log/slog"
@@ -38,12 +40,13 @@ func (a *App) Run() {
 
 	postgresDB, err := postgres.New(a.config.Postgres)
 	if err != nil {
-		a.log.Error("Could not connect to postgres database")
+		a.log.Error("Could not connect to postgres database", sl.Err(err))
 		os.Exit(1)
 	}
 
 	repo := repository.New(postgresDB, a.config)
-	srv := service.New(repo)
+	hash := hasher.New(a.config.Hasher.Salt)
+	srv := service.New(repo, hash)
 	r := router.New(a.config, a.log, srv)
 
 	server := &http.Server{

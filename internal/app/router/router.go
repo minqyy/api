@@ -19,7 +19,6 @@ type Router struct {
 	log     *slog.Logger
 	handler *handler.Handler
 	mw      *middleware.Middleware
-	service *service.Service
 }
 
 // New creates a new instance of router.Router
@@ -27,9 +26,8 @@ func New(cfg *config.Config, log *slog.Logger, s *service.Service) *Router {
 	return &Router{
 		config:  cfg,
 		log:     log,
-		handler: handler.New(cfg, log),
+		handler: handler.New(cfg, log, s),
 		mw:      middleware.New(cfg, log),
-		service: s,
 	}
 }
 

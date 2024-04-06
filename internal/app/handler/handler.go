@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/minqyy/api/internal/app/request"
 	"github.com/minqyy/api/internal/app/response"
 	"github.com/minqyy/api/internal/config"
 	"github.com/minqyy/api/internal/lib/log/sl"
 	"github.com/minqyy/api/internal/service"
+	"github.com/minqyy/api/internal/service/repository/postgres/user"
 	"github.com/minqyy/api/pkg/requestid"
 	"log/slog"
 	"net/http"
@@ -55,7 +57,24 @@ func (h *Handler) Register(ctx *gin.Context) {
 
 	passwordHash := h.service.Hasher.Create([]byte(body.Password))
 
-	user, err := h.service.Repository.User.Create(ctx, body.Email, passwordHash)
+	exists, err := h.service.Repository.User.IsUserExists(ctx, body.Email)
+	if err != nil {
+		log.Error("Error occurred while checking user existence", sl.Err(err))
+		response.SendError(ctx, http.StatusInternalServerError, "can't create user")
+		return
+	}
+	if exists {
+		log.Debug("User already exists", slog.String("email", body.Email))
+		response.SendError(ctx, http.StatusBadRequest, "user already exists")
+		return
+	}
+
+	createdUser, err := h.service.Repository.User.Create(ctx, body.Email, passwordHash)
+	if errors.Is(err, user.ErrUserAlreadyExists) {
+		log.Debug("User already exists")
+		response.SendError(ctx, http.StatusBadRequest, "user already exists")
+		return
+	}
 	if err != nil {
 		log.Error("Error occurred while creating user", sl.Err(err))
 		response.SendError(ctx, http.StatusInternalServerError, "can't create user")
@@ -63,12 +82,12 @@ func (h *Handler) Register(ctx *gin.Context) {
 	}
 
 	log.Info("User created",
-		slog.String("id", user.ID),
-		slog.String("email", user.Email),
+		slog.String("id", createdUser.ID),
+		slog.String("email", createdUser.Email),
 	)
 
 	ctx.JSON(http.StatusCreated, response.User{
-		ID:    user.ID,
-		Email: user.Email,
+		ID:    createdUser.ID,
+		Email: createdUser.Email,
 	})
 }

@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
+	"github.com/minqyy/api/pkg/slice"
 	"log"
 	"os"
 	"time"
@@ -47,17 +48,21 @@ func MustLoad() *Config {
 	configPath := os.Getenv("CONFIG_PATH")
 
 	if configPath == "" {
-		log.Fatalf("Missed CONFIG_PATH environment parameter")
+		log.Fatalf("Missed CONFIG_PATH environment parameter\n")
 	}
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("Config file does not exist at: %s", configPath)
+		log.Fatalf("Config file does not exist at: %s\n", configPath)
 	}
 
 	var config Config
 
 	if err := cleanenv.ReadConfig(configPath, &config); err != nil {
-		log.Fatalf("Cannot read config at %s: %s", configPath, err)
+		log.Fatalf("Cannot read config at %s: %s\n", configPath, err)
+	}
+
+	if !slice.Contains([]string{EnvLocal, EnvDevelopment, EnvProduction}, config.Env) {
+		log.Fatalf("Unknown environment parameter. Use: `local`, `dev` or `prod` values\n")
 	}
 
 	return &config

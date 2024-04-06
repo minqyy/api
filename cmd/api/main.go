@@ -2,9 +2,12 @@ package main
 
 import (
 	"github.com/minqyy/api/internal/config"
+	"github.com/minqyy/api/internal/pkg/app"
 )
 
 func main() {
-	c := config.MustLoad()
-	_ = c
+	conf := config.MustLoad()
+	a := app.New(conf)
+
+	a.Run()
 }

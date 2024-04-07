@@ -15,18 +15,7 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {
-        "/auth/signup": {
-            "post": {
-                "description": "Creates a user in database",
-                "tags": [
-                    "auth"
-                ],
-                "summary": "User registration",
-                "responses": {}
-            }
-        }
-    },
+    "paths": {},
     "securityDefinitions": {
         "AccessToken": {
             "type": "apiKey",

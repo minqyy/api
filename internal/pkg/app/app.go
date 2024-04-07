@@ -13,6 +13,8 @@ import (
 	"github.com/minqyy/api/internal/service/hasher"
 	"github.com/minqyy/api/internal/service/repository"
 	"github.com/minqyy/api/internal/service/repository/postgres"
+	"github.com/minqyy/api/internal/service/repository/redis"
+	"github.com/minqyy/api/internal/service/token"
 	"log/slog"
 	"net/http"
 	"os"
@@ -32,21 +34,27 @@ func New(cfg *config.Config) *App {
 	}
 }
 
-// Run runs entire application and services
 func (a *App) Run() {
 	gin.SetMode(gin.ReleaseMode)
 
-	a.log.Info("Configuring server...", slog.String("env", a.config.Env))
+	a.log.Info("configuring server...", slog.String("env", a.config.Env))
 
 	postgresDB, err := postgres.New(a.config.Postgres)
 	if err != nil {
-		a.log.Error("Could not connect to postgres database", sl.Err(err))
+		a.log.Error("could not connect to postgres database", sl.Err(err))
 		os.Exit(1)
 	}
 
-	repo := repository.New(postgresDB, a.config)
+	redisDB, err := redis.New(a.config.Redis)
+	if err != nil {
+		a.log.Error("could not connect to redis database", sl.Err(err))
+		os.Exit(1)
+	}
+
+	tokenManager := token.New(a.config.Token)
+	repo := repository.New(a.config, postgresDB, redisDB)
 	hash := hasher.New(a.config.Hasher.Salt)
-	srv := service.New(repo, hash)
+	srv := service.New(repo, hash, tokenManager)
 	r := router.New(a.config, a.log, srv)
 
 	server := &http.Server{
@@ -60,34 +68,41 @@ func (a *App) Run() {
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
-				a.log.Error("Could not start the server", sl.Err(err))
+				a.log.Error("could not start the server", sl.Err(err))
 			}
 		}
 	}()
 
-	a.log.Info("Server started", slog.String("address", a.config.Server.Address))
+	a.log.Info("server started", slog.String("address", a.config.Server.Address))
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 
-	a.log.Info("Server is shutting down...")
+	a.log.Info("server is shutting down...")
 
 	err = server.Shutdown(context.Background())
 	if err != nil {
-		a.log.Error("Error occurred on server shutting down", sl.Err(err))
+		a.log.Error("error occurred on server shutting down", sl.Err(err))
 	}
 
-	a.log.Info("Server stopped")
+	a.log.Info("HTTP server stopped")
 
 	err = postgresDB.Close()
 	if err != nil {
-		a.log.Error("Could not close postgres connection")
+		a.log.Error("could not close postgres connection")
 	}
 
-	a.log.Info("Postgres connection closed")
+	a.log.Info("postgres connection closed")
 
-	// TODO: Close all db connections
+	err = redisDB.Close()
+	if err != nil {
+		a.log.Error("could not close redis connection", sl.Err(err))
+	}
+
+	a.log.Info("redis connection closed")
+
+	a.log.Info("all services stopped")
 }
 
 func initLogger(env string) *slog.Logger {

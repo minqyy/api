@@ -17,10 +17,25 @@ const (
 
 type Config struct {
 	Env      string   `yaml:"env" env-required:"true"`
+	Token    Token    `yaml:"token"`
 	Server   Server   `yaml:"server" env-required:"true"`
 	Hasher   Hasher   `yaml:"hasher"`
 	Postgres Postgres `yaml:"postgres"`
 	Redis    Redis    `yaml:"redis"`
+}
+
+type Token struct {
+	Access  TokenAccess  `yaml:"access"`
+	Refresh TokenRefresh `yaml:"refresh"`
+}
+
+type TokenAccess struct {
+	Secret string        `yaml:"secret"`
+	TTL    time.Duration `yaml:"ttl"`
+}
+
+type TokenRefresh struct {
+	TTL time.Duration `yaml:"ttl"`
 }
 
 type Server struct {
@@ -48,7 +63,6 @@ type Redis struct {
 	Password string `yaml:"password"`
 }
 
-// MustLoad loads config to a new Config instance and return it.
 func MustLoad() *Config {
 	_ = godotenv.Load()
 

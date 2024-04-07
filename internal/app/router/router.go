@@ -9,8 +9,8 @@ import (
 	"github.com/minqyy/api/internal/service"
 	"github.com/minqyy/api/pkg/requestid"
 	"github.com/minqyy/api/pkg/str"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	files "github.com/swaggo/files"
+	swagger "github.com/swaggo/gin-swagger"
 	"log/slog"
 )
 
@@ -21,7 +21,6 @@ type Router struct {
 	mw      *middleware.Middleware
 }
 
-// New creates a new instance of router.Router
 func New(cfg *config.Config, log *slog.Logger, s *service.Service) *Router {
 	return &Router{
 		config:  cfg,
@@ -31,7 +30,6 @@ func New(cfg *config.Config, log *slog.Logger, s *service.Service) *Router {
 	}
 }
 
-// InitRoutes initializes all routes and logs them
 func (r *Router) InitRoutes() *gin.Engine {
 	router := gin.New()
 
@@ -41,11 +39,14 @@ func (r *Router) InitRoutes() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		api.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		api.GET("/docs/*any", swagger.WrapHandler(files.Handler))
 
 		auth := api.Group("/auth")
 		{
-			auth.POST("/sign-up", r.handler.Register)
+			auth.POST("/sign-up", r.handler.SignUp)
+			auth.POST("/session", r.handler.Login)
+			auth.DELETE("/session", r.handler.Logout)
+			auth.POST("/refresh", r.handler.RefreshTokens)
 		}
 	}
 
@@ -54,7 +55,6 @@ func (r *Router) InitRoutes() *gin.Engine {
 	return router
 }
 
-// logRoutes logs all routes of router.Router
 func (r *Router) logRoutes(routes gin.RoutesInfo) {
 	for _, route := range routes {
 		var method, path string
@@ -66,7 +66,7 @@ func (r *Router) logRoutes(routes gin.RoutesInfo) {
 			path = route.Path
 		}
 
-		routeLog := fmt.Sprintf("%s %s --> %s", method, path, route.Handler)
+		routeLog := fmt.Sprintf("%s %s -> %s", method, path, route.Handler)
 
 		r.log.Debug(routeLog)
 	}

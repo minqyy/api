@@ -1,9 +1,19 @@
-env: dev
+env: dev # local | dev | prod
+
+token:
+  access:
+    secret: "somesecretkey"
+    ttl: 15m # small value for access token
+  refresh:
+    ttl: 720h # not too small value for refresh token
 
 server:
   address: "0.0.0.0:6969"
   timeout: 4s
   idle_timeout: 60s
+
+hasher:
+  salt: "saltforpasswordhashing"
 
 postgres:
   host: ""
@@ -12,3 +22,8 @@ postgres:
   name: ""
   password: ""
   sslmode: ""
+
+redis:
+  host: ""
+  username: ""
+  password: ""

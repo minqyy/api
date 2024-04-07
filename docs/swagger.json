@@ -8,18 +8,7 @@
     },
     "host": "localhost:6969",
     "basePath": "/api",
-    "paths": {
-        "/auth/signup": {
-            "post": {
-                "description": "Creates a user in database",
-                "tags": [
-                    "auth"
-                ],
-                "summary": "User registration",
-                "responses": {}
-            }
-        }
-    },
+    "paths": {},
     "securityDefinitions": {
         "AccessToken": {
             "type": "apiKey",

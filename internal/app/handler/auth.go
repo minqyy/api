@@ -22,13 +22,13 @@ func (h *Handler) SignUp(ctx *gin.Context) {
 	var body request.UserCreate
 
 	if err := ctx.BindJSON(&body); err != nil {
-		log.Debug("Error occurred while decoding request body", sl.Err(err))
+		log.Debug("error occurred while decoding request body", sl.Err(err))
 		response.SendInvalidRequestBodyError(ctx)
 		return
 	}
 
 	if _, err := mail.ParseAddress(body.Email); err != nil {
-		log.Debug("Email is invalid", slog.String("email", body.Email))
+		log.Debug("email is invalid", slog.String("email", body.Email))
 		response.SendError(ctx, http.StatusBadRequest, "invalid email")
 		return
 	}
@@ -37,29 +37,29 @@ func (h *Handler) SignUp(ctx *gin.Context) {
 
 	exists, err := h.service.Repository.User.IsUserExists(ctx, body.Email)
 	if err != nil {
-		log.Error("Error occurred while checking user existence", sl.Err(err))
+		log.Error("error occurred while checking user existence", sl.Err(err))
 		response.SendError(ctx, http.StatusInternalServerError, "can't create user")
 		return
 	}
 	if exists {
-		log.Debug("User already exists", slog.String("email", body.Email))
+		log.Debug("user already exists", slog.String("email", body.Email))
 		response.SendError(ctx, http.StatusBadRequest, "user already exists")
 		return
 	}
 
 	createdUser, err := h.service.Repository.User.Create(ctx, body.Email, passwordHash)
 	if errors.Is(err, user.ErrUserAlreadyExists) {
-		log.Debug("User already exists")
+		log.Debug("user already exists")
 		response.SendError(ctx, http.StatusBadRequest, "user already exists")
 		return
 	}
 	if err != nil {
-		log.Error("Error occurred while creating user", sl.Err(err))
+		log.Error("error occurred while creating user", sl.Err(err))
 		response.SendError(ctx, http.StatusInternalServerError, "can't create user")
 		return
 	}
 
-	log.Info("User created",
+	log.Info("user created",
 		slog.String("id", createdUser.ID),
 		slog.String("email", createdUser.Email),
 	)

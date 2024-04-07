@@ -13,7 +13,6 @@ type Middleware struct {
 	log    *slog.Logger
 }
 
-// New returns a pointer to a new instance of Middleware
 func New(cfg *config.Config, log *slog.Logger) *Middleware {
 	return &Middleware{
 		config: cfg,
@@ -21,13 +20,12 @@ func New(cfg *config.Config, log *slog.Logger) *Middleware {
 	}
 }
 
-// RequestLog logs every request with parameters: method, path, client_ip, remote_addr, user_agent, status and duration
 func (m *Middleware) RequestLog(ctx *gin.Context) {
 	if strings.HasPrefix(ctx.Request.URL.Path, "/api/docs/") { // ignore logging swagger documentation
 		return
 	}
 
-	m.log.Info("Request handled",
+	m.log.Info("request handled",
 		slog.String("request_id", requestid.Get(ctx)),
 		slog.String("method", ctx.Request.Method),
 		slog.String("path", ctx.Request.URL.Path),

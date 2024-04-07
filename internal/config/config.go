@@ -63,7 +63,6 @@ type Redis struct {
 	Password string `yaml:"password"`
 }
 
-// MustLoad loads config to a new Config instance and return it.
 func MustLoad() *Config {
 	_ = godotenv.Load()
 

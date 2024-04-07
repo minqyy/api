@@ -21,7 +21,6 @@ type Router struct {
 	mw      *middleware.Middleware
 }
 
-// New creates a new instance of router.Router
 func New(cfg *config.Config, log *slog.Logger, s *service.Service) *Router {
 	return &Router{
 		config:  cfg,
@@ -31,7 +30,6 @@ func New(cfg *config.Config, log *slog.Logger, s *service.Service) *Router {
 	}
 }
 
-// InitRoutes initializes all routes and logs them
 func (r *Router) InitRoutes() *gin.Engine {
 	router := gin.New()
 
@@ -57,7 +55,6 @@ func (r *Router) InitRoutes() *gin.Engine {
 	return router
 }
 
-// logRoutes logs all routes of router.Router
 func (r *Router) logRoutes(routes gin.RoutesInfo) {
 	for _, route := range routes {
 		var method, path string

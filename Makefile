@@ -2,7 +2,7 @@ swagger:
 	swag init -g cmd/api/main.go
 
 lint:
-	golangci-lint run -E bodyclose -E contextcheck -E dupl -E goconst
+	golangci-lint run
 
 test:
 	go test -race ./...

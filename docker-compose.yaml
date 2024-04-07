@@ -20,3 +20,15 @@ services:
       - "6379:6379"
     environment:
       - REDIS_ARGS
+
+  minqyy-api:
+    container_name: "minqyy-api"
+    image: "minqyy-api:latest"
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    ports:
+      - "6969:6969"
+    environment:
+      - CONFIG_PATH=./config/dev.yaml

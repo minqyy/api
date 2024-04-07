@@ -13,6 +13,7 @@ import (
 	"github.com/minqyy/api/internal/service/hasher"
 	"github.com/minqyy/api/internal/service/repository"
 	"github.com/minqyy/api/internal/service/repository/postgres"
+	"github.com/minqyy/api/internal/service/repository/redis"
 	"log/slog"
 	"net/http"
 	"os"
@@ -44,7 +45,13 @@ func (a *App) Run() {
 		os.Exit(1)
 	}
 
-	repo := repository.New(postgresDB, a.config)
+	redisDB, err := redis.New(a.config.Redis)
+	if err != nil {
+		a.log.Error("Could not connect to redis database", sl.Err(err))
+		os.Exit(1)
+	}
+
+	repo := repository.New(a.config, postgresDB, redisDB)
 	hash := hasher.New(a.config.Hasher.Salt)
 	srv := service.New(repo, hash)
 	r := router.New(a.config, a.log, srv)
@@ -78,7 +85,7 @@ func (a *App) Run() {
 		a.log.Error("Error occurred on server shutting down", sl.Err(err))
 	}
 
-	a.log.Info("Server stopped")
+	a.log.Info("HTTP server stopped")
 
 	err = postgresDB.Close()
 	if err != nil {
@@ -87,7 +94,14 @@ func (a *App) Run() {
 
 	a.log.Info("Postgres connection closed")
 
-	// TODO: Close all db connections
+	err = redisDB.Close()
+	if err != nil {
+		a.log.Error("Could not close redis connection", sl.Err(err))
+	}
+
+	a.log.Info("Redis connection closed")
+
+	a.log.Info("All services stopped")
 }
 
 func initLogger(env string) *slog.Logger {

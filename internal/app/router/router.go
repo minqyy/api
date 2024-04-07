@@ -45,8 +45,8 @@ func (r *Router) InitRoutes() *gin.Engine {
 		{
 			auth.POST("/sign-up", r.handler.SignUp)
 			auth.POST("/session", r.handler.Login)
-			//	auth.DELETE("/session", r.handler.Logout)
-			//	auth.POST("/refresh", r.handler.RefreshTokens)
+			auth.DELETE("/session", r.handler.Logout)
+			auth.POST("/refresh", r.handler.RefreshTokens)
 		}
 	}
 

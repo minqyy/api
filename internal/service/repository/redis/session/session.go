@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const RefreshTokenCookie = "_refreshToken"
+
 type Redis struct {
 	client *redis.Client
 	config *config.Config

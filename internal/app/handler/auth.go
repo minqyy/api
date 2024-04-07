@@ -7,6 +7,7 @@ import (
 	"github.com/minqyy/api/internal/app/response"
 	"github.com/minqyy/api/internal/lib/log/sl"
 	"github.com/minqyy/api/internal/service/repository/postgres/user"
+	"github.com/minqyy/api/internal/service/repository/redis/session"
 	"github.com/minqyy/api/pkg/requestid"
 	"log/slog"
 	"net/http"
@@ -114,6 +115,92 @@ func (h *Handler) Login(ctx *gin.Context) {
 		response.SendError(ctx, http.StatusInternalServerError, "can't create refresh session")
 		return
 	}
+
+	ctx.JSON(http.StatusOK, response.TokenPair{
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+	})
+}
+
+func (h *Handler) Logout(ctx *gin.Context) {
+	log := h.log.With(
+		slog.String("op", "handler.Logout"),
+		slog.String("request_id", requestid.Get(ctx)),
+	)
+
+	refreshToken, err := ctx.Cookie(session.RefreshTokenCookie)
+	if err != nil {
+		log.Debug("no refresh token cookie found", sl.Err(err))
+		ctx.JSON(http.StatusBadRequest, response.Error{Message: "no refresh token cookie found"})
+		return
+	}
+
+	err = h.service.Repository.Session.Close(ctx, refreshToken)
+	if errors.Is(err, session.ErrSessionNotExists) {
+		log.Debug("refresh session not found")
+		response.SendError(ctx, http.StatusNotFound, "refresh session not found")
+		return
+	}
+	if err != nil {
+		response.SendError(ctx, http.StatusInternalServerError, "can't delete refresh session")
+		log.Error("error occurred while deleting refresh session", sl.Err(err))
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+}
+
+func (h *Handler) RefreshTokens(ctx *gin.Context) {
+	log := h.log.With(
+		slog.String("op", "handler.RefreshTokens"),
+		slog.String("request_id", requestid.Get(ctx)),
+	)
+
+	refreshToken, err := ctx.Cookie(session.RefreshTokenCookie)
+	if err != nil {
+		log.Debug("no refresh token cookie found",
+			sl.Err(err),
+		)
+		response.SendError(ctx, http.StatusForbidden, "no refresh token cookie found")
+		return
+	}
+
+	userSession, err := h.service.Repository.Session.Get(ctx, refreshToken)
+	if err != nil {
+		log.Debug("invalid refresh token")
+		response.SendError(ctx, http.StatusForbidden, "invalid refresh token")
+		return
+	}
+
+	err = h.service.Repository.Session.Close(ctx, refreshToken)
+	if err != nil {
+		log.Error("error occurred while deleting refresh session", sl.Err(err))
+		response.SendError(ctx, http.StatusInternalServerError, "can't delete refresh session")
+	}
+
+	tokenPair, err := h.service.TokenManager.GenerateTokenPair(userSession.UserID)
+	if err != nil {
+		log.Error("error occurred while generating token pair",
+			slog.String("user_id", userSession.UserID),
+			sl.Err(err),
+		)
+		response.SendError(ctx, http.StatusInternalServerError, "can't create token pair")
+		return
+	}
+
+	err = h.service.Repository.Session.Create(ctx, tokenPair.RefreshToken, userSession.UserID, ctx.ClientIP(), ctx.Request.UserAgent())
+	if err != nil {
+		log.Error("error occurred while creating refresh session",
+			slog.String("user_id", userSession.UserID),
+			sl.Err(err),
+		)
+		response.SendError(ctx, http.StatusInternalServerError, "can't create refresh session")
+		return
+	}
+
+	log.Info("refresh session successfully created",
+		slog.String("user_id", userSession.UserID),
+	)
 
 	ctx.JSON(http.StatusOK, response.TokenPair{
 		AccessToken:  tokenPair.AccessToken,

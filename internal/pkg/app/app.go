@@ -14,6 +14,7 @@ import (
 	"github.com/minqyy/api/internal/service/repository"
 	"github.com/minqyy/api/internal/service/repository/postgres"
 	"github.com/minqyy/api/internal/service/repository/redis"
+	"github.com/minqyy/api/internal/service/token"
 	"log/slog"
 	"net/http"
 	"os"
@@ -51,9 +52,10 @@ func (a *App) Run() {
 		os.Exit(1)
 	}
 
+	tokenManager := token.New(a.config.Token)
 	repo := repository.New(a.config, postgresDB, redisDB)
 	hash := hasher.New(a.config.Hasher.Salt)
-	srv := service.New(repo, hash)
+	srv := service.New(repo, hash, tokenManager)
 	r := router.New(a.config, a.log, srv)
 
 	server := &http.Server{

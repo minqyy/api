@@ -45,7 +45,10 @@ func (r *Router) InitRoutes() *gin.Engine {
 
 		auth := api.Group("/auth")
 		{
-			auth.POST("/sign-up", r.handler.Register)
+			auth.POST("/sign-up", r.handler.SignUp)
+			auth.POST("/session", r.handler.Login)
+			//	auth.DELETE("/session", r.handler.Logout)
+			//	auth.POST("/refresh", r.handler.RefreshTokens)
 		}
 	}
 
@@ -66,7 +69,7 @@ func (r *Router) logRoutes(routes gin.RoutesInfo) {
 			path = route.Path
 		}
 
-		routeLog := fmt.Sprintf("%s %s --> %s", method, path, route.Handler)
+		routeLog := fmt.Sprintf("%s %s -> %s", method, path, route.Handler)
 
 		r.log.Debug(routeLog)
 	}

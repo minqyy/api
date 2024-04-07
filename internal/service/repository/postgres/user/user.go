@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
@@ -10,6 +11,7 @@ import (
 
 var (
 	ErrUserAlreadyExists = errors.New("user already exists")
+	ErrUserNotFound      = errors.New("user not found")
 )
 
 type Postgres struct {
@@ -49,4 +51,20 @@ func (p *Postgres) IsUserExists(ctx context.Context, email string) (bool, error)
 		return false, fmt.Errorf("error checking user existence: %v", err)
 	}
 	return count > 0, nil
+}
+
+func (p *Postgres) GetByCredentials(ctx context.Context, email string, passwordHash string) (*User, error) {
+	var user User
+
+	query := "SELECT * FROM users WHERE email = $1 AND password_hash = $2"
+
+	err := p.db.GetContext(ctx, &user, query, email, passwordHash)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrUserNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }

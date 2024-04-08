@@ -158,7 +158,7 @@ func (h *Handler) RefreshTokens(ctx *gin.Context) {
 
 	refreshToken, err := ctx.Cookie(session.RefreshTokenCookie)
 	if err != nil {
-		log.Debug("no refresh token cookie found",
+		log.Debug("no refresh token provided",
 			sl.Err(err),
 		)
 		response.SendError(ctx, http.StatusForbidden, "no refresh token cookie found")

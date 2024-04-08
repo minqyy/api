@@ -2,7 +2,7 @@ package token
 
 import (
 	"errors"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/minqyy/api/internal/config"
 	"time"
@@ -13,8 +13,8 @@ type Manager struct {
 }
 
 type DefaultClaims struct {
-	jwt.StandardClaims
 	ID string `json:"id"`
+	jwt.RegisteredClaims
 }
 
 type Pair struct {
@@ -42,9 +42,9 @@ func (m *Manager) GenerateTokenPair(userID string) (*Pair, error) {
 
 func (m *Manager) generateAccessToken(ID string) (string, error) {
 	claims := DefaultClaims{
-		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(m.config.Access.TTL).Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(m.config.Access.TTL)),
 		},
 		ID: ID,
 	}

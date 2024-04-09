@@ -10,6 +10,7 @@ config/*.yaml
 # Ignore database files
 .database/
 
-# Ignore binary, output files
+# Ignore binary, output and log files
 .bin/
+.logs/
 *.html

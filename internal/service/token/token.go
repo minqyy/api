@@ -54,12 +54,11 @@ func (m *Manager) generateAccessToken(ID string) (string, error) {
 	return token.SignedString([]byte(m.config.Access.Secret))
 }
 
-func (m *Manager) ParseAccessToken(rawToken string) (*DefaultClaims, error) {
-	parsedToken, err := jwt.ParseWithClaims(rawToken, &DefaultClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (m *Manager) ParseAccessToken(accessToken string) (*DefaultClaims, error) {
+	parsedToken, err := jwt.ParseWithClaims(accessToken, &DefaultClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
+			return nil, errors.New("token.ParseAccessToken: invalid signing method")
 		}
-
 		return []byte(m.config.Access.Secret), nil
 	})
 	if err != nil {
@@ -68,7 +67,7 @@ func (m *Manager) ParseAccessToken(rawToken string) (*DefaultClaims, error) {
 
 	claims, ok := parsedToken.Claims.(*DefaultClaims)
 	if !ok {
-		return nil, errors.New("token claims are not of type *DefaultClaims")
+		return nil, errors.New("token.ParseAccessToken: token claims are not of type *DefaultClaims")
 	}
 
 	return claims, nil

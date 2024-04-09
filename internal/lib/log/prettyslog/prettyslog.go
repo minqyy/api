@@ -5,10 +5,23 @@ import (
 	"encoding/json"
 	"io"
 	stdLog "log"
+	"os"
 
 	"github.com/fatih/color"
 	"log/slog"
 )
+
+func Init(level slog.Level) *slog.Logger {
+	opts := PrettyHandlerOptions{
+		SlogOpts: &slog.HandlerOptions{
+			Level: level,
+		},
+	}
+
+	handler := opts.NewPrettyHandler(os.Stdout)
+
+	return slog.New(handler)
+}
 
 type PrettyHandlerOptions struct {
 	SlogOpts *slog.HandlerOptions
@@ -20,9 +33,7 @@ type PrettyHandler struct {
 	attrs  []slog.Attr
 }
 
-func (opts PrettyHandlerOptions) NewPrettyHandler(
-	out io.Writer,
-) *PrettyHandler {
+func (opts PrettyHandlerOptions) NewPrettyHandler(out io.Writer) *PrettyHandler {
 	h := &PrettyHandler{
 		Handler: slog.NewJSONHandler(out, opts.SlogOpts),
 		logger:  stdLog.New(out, "", 0),

@@ -7,6 +7,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/minqyy/api/internal/app/router"
 	"github.com/minqyy/api/internal/config"
+	"github.com/minqyy/api/internal/lib/log"
 	"github.com/minqyy/api/internal/lib/log/prettyslog"
 	"github.com/minqyy/api/internal/lib/log/sl"
 	"github.com/minqyy/api/internal/service"
@@ -28,6 +29,8 @@ type App struct {
 }
 
 func New(cfg *config.Config) *App {
+	_ = os.MkdirAll(".logs", os.ModePerm)
+
 	return &App{
 		config: cfg,
 		log:    initLogger(cfg.Env),
@@ -106,28 +109,16 @@ func (a *App) Run() {
 }
 
 func initLogger(env string) *slog.Logger {
-	var log *slog.Logger
+	var l *slog.Logger
 
 	switch env {
 	case config.EnvLocal:
-		log = initPrettyLogger()
+		l = prettyslog.Init(slog.LevelDebug)
 	case config.EnvDevelopment:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+		l = log.Init(slog.LevelDebug)
 	case config.EnvProduction:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+		l = log.Init(slog.LevelInfo)
 	}
 
-	return log
-}
-
-func initPrettyLogger() *slog.Logger {
-	opts := prettyslog.PrettyHandlerOptions{
-		SlogOpts: &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		},
-	}
-
-	prettyHandler := opts.NewPrettyHandler(os.Stdout)
-
-	return slog.New(prettyHandler)
+	return l
 }

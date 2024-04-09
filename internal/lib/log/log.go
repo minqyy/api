@@ -59,7 +59,7 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 }
 
 func completeLogMessage(r slog.Record) string {
-	line := fmt.Sprintf(`{"time":"%s","level":"%s","message":"%s"`, r.Time.Format("2006-01-02T15:04:05Z07:00"), r.Level.String(), r.Message)
+	line := fmt.Sprintf(`{"time":"%s","level":"%s","message":"%s"`, r.Time.Format("02-01-2006T15:04:05Z07:00"), r.Level.String(), r.Message)
 	r.Attrs(func(a slog.Attr) bool {
 		line += fmt.Sprintf(`,"%s":%v`, a.Key, a.Value.Any())
 		return true

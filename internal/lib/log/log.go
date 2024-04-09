@@ -8,6 +8,18 @@ import (
 	"os"
 )
 
+func Init(level slog.Level) *slog.Logger {
+	opts := HandlerOptions{
+		SlogOptions: &slog.HandlerOptions{
+			Level: level,
+		},
+	}
+
+	handler := opts.NewHandler(os.Stdout)
+
+	return slog.New(handler)
+}
+
 type HandlerOptions struct {
 	SlogOptions *slog.HandlerOptions
 }

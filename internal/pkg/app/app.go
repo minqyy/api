@@ -113,36 +113,12 @@ func initLogger(env string) *slog.Logger {
 
 	switch env {
 	case config.EnvLocal:
-		l = initPrettyLogger(slog.LevelDebug)
+		l = prettyslog.Init(slog.LevelDebug)
 	case config.EnvDevelopment:
-		l = initCustomLogger(slog.LevelDebug)
+		l = log.Init(slog.LevelDebug)
 	case config.EnvProduction:
-		l = initCustomLogger(slog.LevelInfo)
+		l = log.Init(slog.LevelInfo)
 	}
 
 	return l
-}
-
-func initCustomLogger(level slog.Level) *slog.Logger {
-	opts := log.HandlerOptions{
-		SlogOptions: &slog.HandlerOptions{
-			Level: level,
-		},
-	}
-
-	handler := opts.NewHandler(os.Stdout)
-
-	return slog.New(handler)
-}
-
-func initPrettyLogger(level slog.Level) *slog.Logger {
-	opts := prettyslog.PrettyHandlerOptions{
-		SlogOpts: &slog.HandlerOptions{
-			Level: level,
-		},
-	}
-
-	handler := opts.NewPrettyHandler(os.Stdout)
-
-	return slog.New(handler)
 }

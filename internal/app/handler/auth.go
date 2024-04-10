@@ -16,7 +16,7 @@ import (
 
 func (h *Handler) SignUp(ctx *gin.Context) {
 	log := h.log.With(
-		slog.String("op", "handler.Register"),
+		slog.String("op", "handler.SignUp"),
 		slog.String("request_id", requestid.Get(ctx)),
 	)
 

@@ -1,5 +1,5 @@
 swagger:
-	swag init -g cmd/api/main.go
+	swag init -o ./api -g cmd/api/main.go
 
 lint:
 	golangci-lint run

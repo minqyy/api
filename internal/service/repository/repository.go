@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"github.com/minqyy/api/internal/config"
 	"github.com/minqyy/api/internal/service/repository/postgres/user"
@@ -9,8 +10,20 @@ import (
 )
 
 type Repository struct {
-	User    *user.Postgres
-	Session *session.Redis
+	User    IUser
+	Session ISession
+}
+
+type IUser interface {
+	Create(ctx context.Context, email, passwordHash string) (*user.User, error)
+	IsUserExists(ctx context.Context, email string) (bool, error)
+	GetByCredentials(ctx context.Context, email string, passwordHash string) (*user.User, error)
+}
+
+type ISession interface {
+	Create(ctx context.Context, refreshToken string, userID string, ip string, userAgent string) error
+	Close(ctx context.Context, refreshToken string) error
+	Get(ctx context.Context, refreshToken string) (*session.Session, error)
 }
 
 func New(cfg *config.Config, postgresDB *sqlx.DB, redisDB *redis.Client) *Repository {

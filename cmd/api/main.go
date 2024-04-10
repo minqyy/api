@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "github.com/minqyy/api/docs"
+	_ "github.com/minqyy/api/api"
 	"github.com/minqyy/api/internal/config"
 	"github.com/minqyy/api/internal/pkg/app"
 )

@@ -38,23 +38,12 @@ func (opts HandlerOptions) NewHandler(w io.Writer) *Handler {
 }
 
 func (h *Handler) Handle(_ context.Context, r slog.Record) error {
-	line := completeLogMessage(r)
-
-	fmt.Printf(line)
-
+	line := CompleteLogMessage(r)
 	filename := fmt.Sprintf(".logs/api-logs-%s.logs", r.Time.Format("02.01.2006"))
 
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		return err
-	}
-
-	_, err = f.Write([]byte(line))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	fmt.Printf(line)
+	err := ToFile(filename, CompleteLogMessage(r))
+	return err
 }
 
 func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
@@ -70,7 +59,7 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 	}
 }
 
-func completeLogMessage(r slog.Record) string {
+func CompleteLogMessage(r slog.Record) string {
 	line := fmt.Sprintf(`{"time":"%s","level":"%s","message":"%s"`, r.Time.Format("02-01-2006T15:04:05Z07:00"), r.Level.String(), r.Message)
 	r.Attrs(func(a slog.Attr) bool {
 		line += fmt.Sprintf(`,"%s":%v`, a.Key, a.Value.Any())
@@ -79,4 +68,17 @@ func completeLogMessage(r slog.Record) string {
 	line += "}\n"
 
 	return line
+}
+
+func ToFile(filename, message string) error {
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write([]byte(message))
+	if err != nil {
+		return err
+	}
+	return f.Close()
 }

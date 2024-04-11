@@ -3,6 +3,8 @@ package prettyslog
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/minqyy/api/internal/lib/log"
 	"io"
 	stdLog "log"
 	"os"
@@ -88,7 +90,9 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 		color.WhiteString(string(b)),
 	)
 
-	return nil
+	filename := fmt.Sprintf(".logs/api-logs-%s.logs", r.Time.Format("02.01.2006"))
+	err = log.ToFile(filename, log.CompleteLogMessage(r))
+	return err
 }
 
 func (h *PrettyHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
